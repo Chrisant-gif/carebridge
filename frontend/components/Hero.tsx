@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Hero() {
   return (
-    <section className="relative h-screen">
+    <section id="home" className="relative h-screen">
       <Image
         src="/images/hero.jpg"
         alt="CareBridge Hero"
