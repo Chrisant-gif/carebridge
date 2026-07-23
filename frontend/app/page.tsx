@@ -5,6 +5,9 @@ import About from "../components/About";
 import Features from "../components/Features";
 import HowItWorks from "../components/HowItWorks";
 import FounderStory from "../components/FounderStory";
+import DashboardPreview from "../components/DashboardPreview";
+import Footer from "../components/Footer";
+
 export default function Home() {
   return (
     <>
@@ -15,6 +18,8 @@ export default function Home() {
       <Features />
       <HowItWorks />
       <FounderStory />
+      <DashboardPreview />
+      <Footer />
     </>
   );
 }

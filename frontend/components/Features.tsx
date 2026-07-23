@@ -1,95 +1,146 @@
 import {
   HeartHandshake,
   Users,
-  HandHelping,
-  Hospital,
+  HandCoins,
   BarChart3,
+  CalendarCheck,
   ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
 
 export default function Features() {
   const features = [
     {
       icon: HeartHandshake,
-      title: "Donor Management",
+      title: "Caregiver Support",
       description:
-        "Track donors, monitor contributions, and build lasting relationships through transparent records.",
+        "Coordinate home visits, hospital visits, wheelchair support, and caregiver programs from one modern platform.",
     },
     {
       icon: Users,
-      title: "Volunteer Coordination",
+      title: "Volunteer Management",
       description:
-        "Manage volunteers, assign community activities, and monitor participation effortlessly.",
+        "Organize volunteers, assign activities, and keep every outreach event running smoothly.",
     },
     {
-      icon: HandHelping,
-      title: "Beneficiary Records",
+      icon: HandCoins,
+      title: "Donation Tracking",
       description:
-        "Maintain secure records of families, individuals, and the support they receive.",
+        "Track donations, diaper drives, and sponsorships with complete transparency.",
     },
     {
-      icon: Hospital,
-      title: "Hospital Visit Tracking",
+      icon: CalendarCheck,
+      title: "Activity Planning",
       description:
-        "Log outreach visits, appointments, and follow-up care for every beneficiary.",
+        "Schedule hospital visits, home visits, tree planting, and community outreach with ease.",
     },
     {
       icon: BarChart3,
-      title: "Reports & Analytics",
+      title: "Impact Reporting",
       description:
-        "Generate meaningful insights to help NGOs measure impact and make informed decisions.",
+        "Generate meaningful reports that demonstrate measurable community impact.",
     },
     {
       icon: ShieldCheck,
-      title: "Secure Online Donations",
+      title: "Secure Platform",
       description:
-        "Allow donors to contribute safely while providing clear records of every donation.",
+        "Protect beneficiary information using a secure and reliable management system.",
     },
   ];
 
   return (
-    <section id="features" className="bg-white py-24">
+    <section
+      id="features"
+      className="bg-gradient-to-b from-gray-50 to-white py-28"
+    >
       <div className="mx-auto max-w-7xl px-6">
-        <div className="text-center">
-          <p className="font-semibold uppercase tracking-[0.3em] text-emerald-600">
+
+        {/* Heading */}
+
+        <div className="mx-auto max-w-3xl text-center">
+
+          <p className="font-semibold uppercase tracking-[0.35em] text-emerald-600">
             Features
           </p>
 
-          <h2 className="mt-4 text-4xl font-bold leading-tight text-gray-900 md:text-5xl">
-            Everything an NGO needs in one platform
+          <h2 className="mt-5 text-4xl font-bold text-gray-900 md:text-5xl">
+            Everything your organization needs.
           </h2>
 
-          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-gray-600">
-            CareBridge brings together donors, volunteers, beneficiaries,
-            administrators, and community partners into one secure,
-            easy-to-use platform.
+          <p className="mt-6 text-lg leading-9 text-gray-600">
+            CareBridge provides modern tools that simplify NGO operations,
+            strengthen collaboration, and increase transparency for every
+            caregiver, volunteer, donor, and beneficiary.
           </p>
+
         </div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {/* Cards */}
+
+        <div className="mt-20 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+
           {features.map((feature) => {
             const Icon = feature.icon;
 
             return (
               <div
                 key={feature.title}
-                className="group rounded-3xl border border-gray-100 bg-white p-8 shadow-sm transition-all duration-500 hover:-translate-y-3 hover:border-emerald-200 hover:shadow-2xl"
+                className="
+                  group
+                  relative
+                  overflow-hidden
+                  rounded-3xl
+                  border
+                  border-gray-100
+                  bg-white
+                  p-8
+                  shadow-sm
+                  transition-all
+                  duration-500
+                  hover:-translate-y-3
+                  hover:border-emerald-200
+                  hover:shadow-2xl
+                "
               >
-                <div className="mb-6 inline-flex rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200 p-4 transition-transform duration-300 group-hover:scale-110">
-                  <Icon className="h-8 w-8 text-emerald-700" />
+                {/* Background Glow */}
+
+                <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-emerald-100 opacity-0 blur-3xl transition duration-500 group-hover:opacity-100"></div>
+
+                {/* Icon */}
+
+                <div className="relative mb-8 inline-flex rounded-2xl bg-emerald-100 p-4 transition duration-500 group-hover:scale-110 group-hover:bg-emerald-600">
+
+                  <Icon className="h-8 w-8 text-emerald-700 transition duration-500 group-hover:text-white" />
+
                 </div>
 
-                <h3 className="text-2xl font-bold text-gray-900">
+                {/* Title */}
+
+                <h3 className="relative text-2xl font-bold text-gray-900">
                   {feature.title}
                 </h3>
 
-                <p className="mt-4 leading-7 text-gray-600">
+                {/* Description */}
+
+                <p className="relative mt-5 leading-8 text-gray-600">
                   {feature.description}
                 </p>
+
+                {/* Learn More */}
+
+                <div className="relative mt-8 flex items-center gap-2 font-semibold text-emerald-600 opacity-0 transition duration-500 group-hover:opacity-100">
+
+                  Learn More
+
+                  <ArrowRight className="h-5 w-5" />
+
+                </div>
               </div>
             );
           })}
+
         </div>
+
       </div>
     </section>
   );
