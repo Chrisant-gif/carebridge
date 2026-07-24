@@ -16,13 +16,15 @@ import PrimaryButton from "../../../components/dashboard/PrimaryButton";
 import SearchBar from "../../../components/dashboard/SearchBar";
 import StatCard from "../../../components/dashboard/StatCard";
 
-import FamilyForm from "../../../components/dashboard/families/FamilyForm";
+import FamilyForm, {
+  FamilyFormData,
+} from "../../../components/dashboard/families/FamilyForm";
 import FamiliesTable from "../../../components/dashboard/families/FamiliesTable";
 
 export default function FamiliesPage() {
   const [openModal, setOpenModal] = useState(false);
 
-  const [families] = useState<Family[]>([
+  const [families, setFamilies] = useState<Family[]>([
     {
       id: 1,
       child: "Brian Mwangi",
@@ -55,6 +57,26 @@ export default function FamiliesPage() {
     },
   ]);
 
+  const handleSaveFamily = (data: FamilyFormData) => {
+    const newFamily: Family = {
+      id: Date.now(),
+      child: data.child,
+      caregiver: data.caregiver,
+      condition: data.condition,
+      phone: data.phone,
+      address: data.address,
+      lastVisit: new Date().toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      status: "Active",
+    };
+
+    setFamilies((prev) => [...prev, newFamily]);
+    setOpenModal(false);
+  };
+
   return (
     <>
       <PageHeader
@@ -72,7 +94,6 @@ export default function FamiliesPage() {
       </div>
 
       <div className="mb-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-
         <StatCard
           title="Total Families"
           value={families.length.toString()}
@@ -83,7 +104,7 @@ export default function FamiliesPage() {
         <StatCard
           title="Active Cases"
           value={families
-            .filter((f) => f.status === "Active")
+            .filter((family) => family.status === "Active")
             .length.toString()}
           subtitle="Currently active"
           icon={<HeartHandshake size={30} />}
@@ -102,7 +123,6 @@ export default function FamiliesPage() {
           subtitle="Completed"
           icon={<Activity size={30} />}
         />
-
       </div>
 
       <FamiliesTable families={families} />
@@ -112,7 +132,10 @@ export default function FamiliesPage() {
         title="Register New Family"
         onClose={() => setOpenModal(false)}
       >
-        <FamilyForm onCancel={() => setOpenModal(false)} />
+        <FamilyForm
+          onCancel={() => setOpenModal(false)}
+          onSave={handleSaveFamily}
+        />
       </Modal>
     </>
   );
