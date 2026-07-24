@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { Family } from "../../../types/family";
 import PrimaryButton from "../PrimaryButton";
 
 export interface FamilyFormData {
@@ -13,6 +14,7 @@ export interface FamilyFormData {
 }
 
 interface FamilyFormProps {
+  family?: Family | null;
   onCancel: () => void;
   onSave: (data: FamilyFormData) => void;
 }
@@ -26,10 +28,25 @@ const initialForm: FamilyFormData = {
 };
 
 export default function FamilyForm({
+  family,
   onCancel,
   onSave,
 }: FamilyFormProps) {
   const [form, setForm] = useState<FamilyFormData>(initialForm);
+
+  useEffect(() => {
+    if (family) {
+      setForm({
+        child: family.child,
+        caregiver: family.caregiver,
+        condition: family.condition,
+        phone: family.phone,
+        address: family.address,
+      });
+    } else {
+      setForm(initialForm);
+    }
+  }, [family]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -61,7 +78,9 @@ export default function FamilyForm({
 
     onSave(form);
 
-    resetForm();
+    if (!family) {
+      resetForm();
+    }
   };
 
   return (
@@ -153,7 +172,7 @@ export default function FamilyForm({
         </button>
 
         <PrimaryButton type="submit">
-          Save Family
+          {family ? "Update Family" : "Save Family"}
         </PrimaryButton>
       </div>
     </form>

@@ -10,19 +10,22 @@ import {
 
 import { Family } from "../../../types/family";
 
-import Modal from "../../../components/dashboard/Modal";
 import PageHeader from "../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../components/dashboard/PrimaryButton";
 import SearchBar from "../../../components/dashboard/SearchBar";
 import StatCard from "../../../components/dashboard/StatCard";
 
-import FamilyForm, {
+import FamilyModal from "../../../components/dashboard/families/FamilyModal";
+import FamiliesTable from "../../../components/dashboard/families/FamiliesTable";
+import {
   FamilyFormData,
 } from "../../../components/dashboard/families/FamilyForm";
-import FamiliesTable from "../../../components/dashboard/families/FamiliesTable";
 
 export default function FamiliesPage() {
-  const [openModal, setOpenModal] = useState(false);
+  const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
+
+  const [editingFamily, setEditingFamily] =
+    useState<Family | null>(null);
 
   const [families, setFamilies] = useState<Family[]>([
     {
@@ -57,24 +60,59 @@ export default function FamiliesPage() {
     },
   ]);
 
-  const handleSaveFamily = (data: FamilyFormData) => {
-    const newFamily: Family = {
-      id: Date.now(),
-      child: data.child,
-      caregiver: data.caregiver,
-      condition: data.condition,
-      phone: data.phone,
-      address: data.address,
-      lastVisit: new Date().toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
-      status: "Active",
-    };
+  const handleOpenCreateModal = () => {
+    setEditingFamily(null);
+    setIsFamilyModalOpen(true);
+  };
 
-    setFamilies((prev) => [...prev, newFamily]);
-    setOpenModal(false);
+  const handleOpenEditModal = (family: Family) => {
+    setEditingFamily(family);
+    setIsFamilyModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setEditingFamily(null);
+    setIsFamilyModalOpen(false);
+  };
+
+  const handleSaveFamily = (data: FamilyFormData) => {
+    if (editingFamily) {
+      const updatedFamily: Family = {
+        ...editingFamily,
+        child: data.child,
+        caregiver: data.caregiver,
+        condition: data.condition,
+        phone: data.phone,
+        address: data.address,
+      };
+
+      setFamilies((prev) =>
+        prev.map((family) =>
+          family.id === updatedFamily.id
+            ? updatedFamily
+            : family
+        )
+      );
+    } else {
+      const newFamily: Family = {
+        id: Date.now(),
+        child: data.child,
+        caregiver: data.caregiver,
+        condition: data.condition,
+        phone: data.phone,
+        address: data.address,
+        lastVisit: new Date().toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+        status: "Active",
+      };
+
+      setFamilies((prev) => [...prev, newFamily]);
+    }
+
+    handleCloseModal();
   };
 
   return (
@@ -83,7 +121,7 @@ export default function FamiliesPage() {
         title="Families"
         description="Manage all beneficiary families supported by Kingdom Caregivers."
         action={
-          <PrimaryButton onClick={() => setOpenModal(true)}>
+          <PrimaryButton onClick={handleOpenCreateModal}>
             + Add Family
           </PrimaryButton>
         }
@@ -125,18 +163,17 @@ export default function FamiliesPage() {
         />
       </div>
 
-      <FamiliesTable families={families} />
+      <FamiliesTable
+        families={families}
+        onEdit={handleOpenEditModal}
+      />
 
-      <Modal
-        open={openModal}
-        title="Register New Family"
-        onClose={() => setOpenModal(false)}
-      >
-        <FamilyForm
-          onCancel={() => setOpenModal(false)}
-          onSave={handleSaveFamily}
-        />
-      </Modal>
+      <FamilyModal
+        open={isFamilyModalOpen}
+        family={editingFamily}
+        onClose={handleCloseModal}
+        onSave={handleSaveFamily}
+      />
     </>
   );
 }
