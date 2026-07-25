@@ -1,15 +1,18 @@
-import { Pencil, Eye } from "lucide-react";
+import Link from "next/link";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 
 import { Family } from "../../../types/family";
 
 interface FamiliesTableProps {
   families: Family[];
   onEdit: (family: Family) => void;
+  onDelete: (family: Family) => void;
 }
 
 export default function FamiliesTable({
   families,
   onEdit,
+  onDelete,
 }: FamiliesTableProps) {
   return (
     <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
@@ -77,22 +80,31 @@ export default function FamiliesTable({
               </td>
 
               <td className="px-6 py-5">
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 font-medium text-blue-600 transition hover:text-blue-800"
+                <div className="flex justify-end gap-4">
+                  <Link
+                    href={`/dashboard/families/${family.id}`}
+                    className="flex items-center gap-1 text-blue-600 transition hover:text-blue-800"
                   >
                     <Eye size={16} />
-                    View
-                  </button>
+                    <span>View</span>
+                  </Link>
 
                   <button
                     type="button"
                     onClick={() => onEdit(family)}
-                    className="flex items-center gap-1 font-medium text-emerald-600 transition hover:text-emerald-800"
+                    className="flex items-center gap-1 text-emerald-600 transition hover:text-emerald-800"
                   >
                     <Pencil size={16} />
-                    Edit
+                    <span>Edit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onDelete(family)}
+                    className="flex items-center gap-1 text-red-600 transition hover:text-red-800"
+                  >
+                    <Trash2 size={16} />
+                    <span>Delete</span>
                   </button>
                 </div>
               </td>

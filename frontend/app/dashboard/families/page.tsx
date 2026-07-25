@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Users,
   HeartHandshake,
@@ -15,16 +15,23 @@ import PrimaryButton from "../../../components/dashboard/PrimaryButton";
 import SearchBar from "../../../components/dashboard/SearchBar";
 import StatCard from "../../../components/dashboard/StatCard";
 
+import ConfirmDialog from "../../../components/dashboard/ConfirmDialog";
 import FamilyModal from "../../../components/dashboard/families/FamilyModal";
 import FamiliesTable from "../../../components/dashboard/families/FamiliesTable";
+
 import {
   FamilyFormData,
 } from "../../../components/dashboard/families/FamilyForm";
 
 export default function FamiliesPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
 
   const [editingFamily, setEditingFamily] =
+    useState<Family | null>(null);
+
+  const [familyToDelete, setFamilyToDelete] =
     useState<Family | null>(null);
 
   const [families, setFamilies] = useState<Family[]>([
@@ -59,6 +66,22 @@ export default function FamiliesPage() {
       status: "Active",
     },
   ]);
+
+  const filteredFamilies = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    if (!query) {
+      return families;
+    }
+
+    return families.filter((family) =>
+      family.child.toLowerCase().includes(query) ||
+      family.caregiver.toLowerCase().includes(query) ||
+      family.condition.toLowerCase().includes(query) ||
+      family.phone.toLowerCase().includes(query) ||
+      family.address.toLowerCase().includes(query)
+    );
+  }, [families, searchTerm]);
 
   const handleOpenCreateModal = () => {
     setEditingFamily(null);
@@ -115,6 +138,24 @@ export default function FamiliesPage() {
     handleCloseModal();
   };
 
+  const handleDeleteClick = (family: Family) => {
+    setFamilyToDelete(family);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!familyToDelete) return;
+
+    setFamilies((prev) =>
+      prev.filter((family) => family.id !== familyToDelete.id)
+    );
+
+    setFamilyToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setFamilyToDelete(null);
+  };
+
   return (
     <>
       <PageHeader
@@ -128,7 +169,11 @@ export default function FamiliesPage() {
       />
 
       <div className="mb-8">
-        <SearchBar placeholder="Search families..." />
+        <SearchBar
+          placeholder="Search families..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
       </div>
 
       <div className="mb-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -164,8 +209,9 @@ export default function FamiliesPage() {
       </div>
 
       <FamiliesTable
-        families={families}
+        families={filteredFamilies}
         onEdit={handleOpenEditModal}
+        onDelete={handleDeleteClick}
       />
 
       <FamilyModal
@@ -173,6 +219,20 @@ export default function FamiliesPage() {
         family={editingFamily}
         onClose={handleCloseModal}
         onSave={handleSaveFamily}
+      />
+
+      <ConfirmDialog
+        open={familyToDelete !== null}
+        title="Delete Family"
+        message={
+          familyToDelete
+            ? `Are you sure you want to delete "${familyToDelete.child}"? This action cannot be undone.`
+            : ""
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
       />
     </>
   );
