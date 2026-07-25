@@ -10,6 +10,7 @@ import {
 
 import { Visit } from "../../../types/visit";
 import { initialVisits } from "../../../data/visits";
+import { initialFamilies } from "../../../data/families";
 
 import PageHeader from "../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../components/dashboard/PrimaryButton";
@@ -187,21 +188,17 @@ export default function VisitsPage() {
         initialData={
           editingVisit
             ? {
-                familyId:
-                  editingVisit.familyId,
-                caregiver:
-                  editingVisit.caregiver,
-                visitType:
-                  editingVisit.visitType,
+                familyId: editingVisit.familyId,
+                caregiver: editingVisit.caregiver,
+                visitType: editingVisit.visitType,
                 date: editingVisit.date,
-                location:
-                  editingVisit.location,
-                status:
-                  editingVisit.status,
+                location: editingVisit.location,
+                status: editingVisit.status,
                 notes: editingVisit.notes,
               }
             : undefined
         }
+        families={initialFamilies}
         onClose={handleCloseModal}
         onSave={handleSaveVisit}
       />
@@ -209,7 +206,9 @@ export default function VisitsPage() {
       <ConfirmDialog
         open={!!deletingVisit}
         title="Delete Visit"
-        message={`Are you sure you want to delete this ${deletingVisit?.visitType.toLowerCase()} visit? This action cannot be undone.`}
+        message={`Are you sure you want to delete this ${
+          deletingVisit?.visitType.toLowerCase() ?? ""
+        } visit? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={handleConfirmDelete}
