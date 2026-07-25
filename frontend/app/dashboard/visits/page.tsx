@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CalendarHeart,
   Home,
@@ -29,6 +29,9 @@ export default function VisitsPage() {
   const [visits, setVisits] =
     useState<Visit[]>(initialVisits);
 
+  const [searchTerm, setSearchTerm] =
+    useState("");
+
   const [isVisitModalOpen, setIsVisitModalOpen] =
     useState(false);
 
@@ -37,6 +40,41 @@ export default function VisitsPage() {
 
   const [deletingVisit, setDeletingVisit] =
     useState<Visit | null>(null);
+
+  const filteredVisits = useMemo(() => {
+    const query = searchTerm
+      .toLowerCase()
+      .trim();
+
+    if (!query) return visits;
+
+    return visits.filter((visit) => {
+      const family = initialFamilies.find(
+        (f) => f.id === visit.familyId
+      );
+
+      return (
+        family?.child
+          .toLowerCase()
+          .includes(query) ||
+        visit.caregiver
+          .toLowerCase()
+          .includes(query) ||
+        visit.visitType
+          .toLowerCase()
+          .includes(query) ||
+        visit.location
+          .toLowerCase()
+          .includes(query) ||
+        visit.status
+          .toLowerCase()
+          .includes(query) ||
+        visit.date
+          .toLowerCase()
+          .includes(query)
+      );
+    });
+  }, [searchTerm, visits]);
 
   const completedVisits = visits.filter(
     (visit) => visit.status === "Completed"
@@ -117,19 +155,18 @@ export default function VisitsPage() {
   };
 
   const handleConfirmDelete = () => {
-    if (!deletingVisit) return;
+  if (!deletingVisit) return;
 
-    setVisits((prev) =>
-      prev.filter(
-        (visit) =>
-          visit.id !== deletingVisit.id
-      )
-    );
+  setVisits((prev) =>
+    prev.filter(
+      (visit) => visit.id !== deletingVisit.id
+    )
+  );
 
-    setDeletingVisit(null);
-  };
+  setDeletingVisit(null);
+};
 
-  return (
+return (
     <>
       <PageHeader
         title="Visits"
@@ -144,7 +181,11 @@ export default function VisitsPage() {
       />
 
       <div className="mb-8">
-        <SearchBar placeholder="Search visits..." />
+        <SearchBar
+          placeholder="Search visits..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
       </div>
 
       <div className="mb-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -178,7 +219,7 @@ export default function VisitsPage() {
       </div>
 
       <VisitsTable
-        visits={visits}
+        visits={filteredVisits}
         onEdit={handleOpenEditModal}
         onDelete={handleDeleteClick}
       />
