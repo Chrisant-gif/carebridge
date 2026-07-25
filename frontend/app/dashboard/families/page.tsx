@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Users,
   HeartHandshake,
@@ -9,79 +9,32 @@ import {
 } from "lucide-react";
 
 import { Family } from "../../../types/family";
+import { initialFamilies } from "../../../data/families";
 
 import PageHeader from "../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../components/dashboard/PrimaryButton";
 import SearchBar from "../../../components/dashboard/SearchBar";
 import StatCard from "../../../components/dashboard/StatCard";
 
-import ConfirmDialog from "../../../components/dashboard/ConfirmDialog";
 import FamilyModal from "../../../components/dashboard/families/FamilyModal";
 import FamiliesTable from "../../../components/dashboard/families/FamiliesTable";
-
 import {
   FamilyFormData,
 } from "../../../components/dashboard/families/FamilyForm";
 
-export default function FamiliesPage() {
-  const [searchTerm, setSearchTerm] = useState("");
+import ConfirmDialog from "../../../components/dashboard/ConfirmDialog";
 
+export default function FamiliesPage() {
   const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
 
   const [editingFamily, setEditingFamily] =
     useState<Family | null>(null);
 
-  const [familyToDelete, setFamilyToDelete] =
+  const [deletingFamily, setDeletingFamily] =
     useState<Family | null>(null);
 
-  const [families, setFamilies] = useState<Family[]>([
-    {
-      id: 1,
-      child: "Brian Mwangi",
-      caregiver: "Stella K",
-      condition: "Cerebral Palsy",
-      phone: "+254700123456",
-      address: "Kasarani",
-      lastVisit: "15 Jul 2026",
-      status: "Active",
-    },
-    {
-      id: 2,
-      child: "Aisha Wanjiku",
-      caregiver: "Mary W",
-      condition: "Autism",
-      phone: "+254711654321",
-      address: "Roysambu",
-      lastVisit: "10 Jul 2026",
-      status: "Follow-up",
-    },
-    {
-      id: 3,
-      child: "Kevin Otieno",
-      caregiver: "Jane A",
-      condition: "Cerebral Palsy",
-      phone: "+254722345678",
-      address: "Kahawa West",
-      lastVisit: "08 Jul 2026",
-      status: "Active",
-    },
-  ]);
-
-  const filteredFamilies = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-
-    if (!query) {
-      return families;
-    }
-
-    return families.filter((family) =>
-      family.child.toLowerCase().includes(query) ||
-      family.caregiver.toLowerCase().includes(query) ||
-      family.condition.toLowerCase().includes(query) ||
-      family.phone.toLowerCase().includes(query) ||
-      family.address.toLowerCase().includes(query)
-    );
-  }, [families, searchTerm]);
+  const [families, setFamilies] =
+    useState<Family[]>(initialFamilies);
 
   const handleOpenCreateModal = () => {
     setEditingFamily(null);
@@ -139,21 +92,19 @@ export default function FamiliesPage() {
   };
 
   const handleDeleteClick = (family: Family) => {
-    setFamilyToDelete(family);
+    setDeletingFamily(family);
   };
 
   const handleConfirmDelete = () => {
-    if (!familyToDelete) return;
+    if (!deletingFamily) return;
 
     setFamilies((prev) =>
-      prev.filter((family) => family.id !== familyToDelete.id)
+      prev.filter(
+        (family) => family.id !== deletingFamily.id
+      )
     );
 
-    setFamilyToDelete(null);
-  };
-
-  const handleCancelDelete = () => {
-    setFamilyToDelete(null);
+    setDeletingFamily(null);
   };
 
   return (
@@ -169,11 +120,7 @@ export default function FamiliesPage() {
       />
 
       <div className="mb-8">
-        <SearchBar
-          placeholder="Search families..."
-          value={searchTerm}
-          onChange={setSearchTerm}
-        />
+        <SearchBar placeholder="Search families..." />
       </div>
 
       <div className="mb-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -209,7 +156,7 @@ export default function FamiliesPage() {
       </div>
 
       <FamiliesTable
-        families={filteredFamilies}
+        families={families}
         onEdit={handleOpenEditModal}
         onDelete={handleDeleteClick}
       />
@@ -222,17 +169,15 @@ export default function FamiliesPage() {
       />
 
       <ConfirmDialog
-        open={familyToDelete !== null}
+        open={!!deletingFamily}
         title="Delete Family"
-        message={
-          familyToDelete
-            ? `Are you sure you want to delete "${familyToDelete.child}"? This action cannot be undone.`
-            : ""
-        }
+        message={`Are you sure you want to delete ${
+          deletingFamily?.child ?? "this family"
+        }? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+        onCancel={() => setDeletingFamily(null)}
       />
     </>
   );

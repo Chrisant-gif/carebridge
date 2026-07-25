@@ -8,41 +8,8 @@ import {
   Activity,
 } from "lucide-react";
 
-import { Family } from "../../../../types/family";
+import { initialFamilies } from "../../../../data/families";
 import StatCard from "../../../../components/dashboard/StatCard";
-
-const families: Family[] = [
-  {
-    id: 1,
-    child: "Brian Mwangi",
-    caregiver: "Stella K",
-    condition: "Cerebral Palsy",
-    phone: "+254700123456",
-    address: "Kasarani",
-    lastVisit: "15 Jul 2026",
-    status: "Active",
-  },
-  {
-    id: 2,
-    child: "Aisha Wanjiku",
-    caregiver: "Mary W",
-    condition: "Autism",
-    phone: "+254711654321",
-    address: "Roysambu",
-    lastVisit: "10 Jul 2026",
-    status: "Follow-up",
-  },
-  {
-    id: 3,
-    child: "Kevin Otieno",
-    caregiver: "Jane A",
-    condition: "Cerebral Palsy",
-    phone: "+254722345678",
-    address: "Kahawa West",
-    lastVisit: "08 Jul 2026",
-    status: "Active",
-  },
-];
 
 interface FamilyDetailsPageProps {
   params: Promise<{
@@ -55,8 +22,8 @@ export default async function FamilyDetailsPage({
 }: FamilyDetailsPageProps) {
   const { id } = await params;
 
-  const family = families.find(
-    (f) => f.id === Number(id)
+  const family = initialFamilies.find(
+    (family) => family.id === Number(id)
   );
 
   if (!family) {
@@ -74,7 +41,9 @@ export default async function FamilyDetailsPage({
           Back to Families
         </Link>
 
-        <h1 className="text-3xl font-bold">{family.child}</h1>
+        <h1 className="text-3xl font-bold">
+          {family.child}
+        </h1>
 
         <p className="mt-2 text-gray-500">
           Family profile and care information.
