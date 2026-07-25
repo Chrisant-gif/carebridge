@@ -7,7 +7,7 @@ import {
   Users,
   HeartHandshake,
   HandCoins,
-  Hospital,
+  CalendarHeart,
   BarChart3,
   Settings,
 } from "lucide-react";
@@ -24,6 +24,11 @@ const menuItems = [
     href: "/dashboard/families",
   },
   {
+    icon: CalendarHeart,
+    label: "Visits",
+    href: "/dashboard/visits",
+  },
+  {
     icon: HeartHandshake,
     label: "Volunteers",
     href: "/dashboard/volunteers",
@@ -32,11 +37,6 @@ const menuItems = [
     icon: HandCoins,
     label: "Donations",
     href: "/dashboard/donations",
-  },
-  {
-    icon: Hospital,
-    label: "Hospital Visits",
-    href: "/dashboard/hospital-visits",
   },
   {
     icon: BarChart3,
@@ -87,7 +87,6 @@ export default function Sidebar() {
                   }`}
                 >
                   <Icon size={22} />
-
                   <span>{item.label}</span>
                 </Link>
               </li>
