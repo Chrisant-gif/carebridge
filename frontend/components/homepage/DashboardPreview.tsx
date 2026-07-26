@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import {
   Users,
   HeartHandshake,
@@ -11,7 +13,7 @@ function StatCard({
   title,
   value,
 }: {
-  icon: JSX.Element;
+  icon: ReactNode;
   title: string;
   value: string;
 }) {

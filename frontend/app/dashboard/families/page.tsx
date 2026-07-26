@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Users,
   HeartHandshake,
@@ -25,7 +25,8 @@ import {
 import ConfirmDialog from "../../../components/dashboard/ConfirmDialog";
 
 export default function FamiliesPage() {
-  const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
+  const [isFamilyModalOpen, setIsFamilyModalOpen] =
+    useState(false);
 
   const [editingFamily, setEditingFamily] =
     useState<Family | null>(null);
@@ -36,12 +37,38 @@ export default function FamiliesPage() {
   const [families, setFamilies] =
     useState<Family[]>(initialFamilies);
 
+  const [searchTerm, setSearchTerm] =
+    useState("");
+
+  const filteredFamilies = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
+
+    if (!query) return families;
+
+    return families.filter((family) =>
+      [
+        family.child,
+        family.caregiver,
+        family.condition,
+        family.phone,
+        family.address,
+        family.status,
+        family.lastVisit,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(query)
+    );
+  }, [families, searchTerm]);
+
   const handleOpenCreateModal = () => {
     setEditingFamily(null);
     setIsFamilyModalOpen(true);
   };
 
-  const handleOpenEditModal = (family: Family) => {
+  const handleOpenEditModal = (
+    family: Family
+  ) => {
     setEditingFamily(family);
     setIsFamilyModalOpen(true);
   };
@@ -51,7 +78,9 @@ export default function FamiliesPage() {
     setIsFamilyModalOpen(false);
   };
 
-  const handleSaveFamily = (data: FamilyFormData) => {
+  const handleSaveFamily = (
+    data: FamilyFormData
+  ) => {
     if (editingFamily) {
       const updatedFamily: Family = {
         ...editingFamily,
@@ -77,21 +106,29 @@ export default function FamiliesPage() {
         condition: data.condition,
         phone: data.phone,
         address: data.address,
-        lastVisit: new Date().toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }),
+        lastVisit: new Date().toLocaleDateString(
+          "en-GB",
+          {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }
+        ),
         status: "Active",
       };
 
-      setFamilies((prev) => [...prev, newFamily]);
+      setFamilies((prev) => [
+        ...prev,
+        newFamily,
+      ]);
     }
 
     handleCloseModal();
   };
 
-  const handleDeleteClick = (family: Family) => {
+  const handleDeleteClick = (
+    family: Family
+  ) => {
     setDeletingFamily(family);
   };
 
@@ -100,7 +137,8 @@ export default function FamiliesPage() {
 
     setFamilies((prev) =>
       prev.filter(
-        (family) => family.id !== deletingFamily.id
+        (family) =>
+          family.id !== deletingFamily.id
       )
     );
 
@@ -113,14 +151,20 @@ export default function FamiliesPage() {
         title="Families"
         description="Manage all beneficiary families supported by Kingdom Caregivers."
         action={
-          <PrimaryButton onClick={handleOpenCreateModal}>
+          <PrimaryButton
+            onClick={handleOpenCreateModal}
+          >
             + Add Family
           </PrimaryButton>
         }
       />
 
       <div className="mb-8">
-        <SearchBar placeholder="Search families..." />
+        <SearchBar
+          placeholder="Search families..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
       </div>
 
       <div className="mb-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -134,17 +178,24 @@ export default function FamiliesPage() {
         <StatCard
           title="Active Cases"
           value={families
-            .filter((family) => family.status === "Active")
+            .filter(
+              (family) =>
+                family.status === "Active"
+            )
             .length.toString()}
           subtitle="Currently active"
-          icon={<HeartHandshake size={30} />}
+          icon={
+            <HeartHandshake size={30} />
+          }
         />
 
         <StatCard
           title="Hospital Visits"
           value="320"
           subtitle="This year"
-          icon={<CalendarHeart size={30} />}
+          icon={
+            <CalendarHeart size={30} />
+          }
         />
 
         <StatCard
@@ -156,7 +207,7 @@ export default function FamiliesPage() {
       </div>
 
       <FamiliesTable
-        families={families}
+        families={filteredFamilies}
         onEdit={handleOpenEditModal}
         onDelete={handleDeleteClick}
       />
@@ -172,12 +223,15 @@ export default function FamiliesPage() {
         open={!!deletingFamily}
         title="Delete Family"
         message={`Are you sure you want to delete ${
-          deletingFamily?.child ?? "this family"
+          deletingFamily?.child ??
+          "this family"
         }? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={handleConfirmDelete}
-        onCancel={() => setDeletingFamily(null)}
+        onCancel={() =>
+          setDeletingFamily(null)
+        }
       />
     </>
   );
