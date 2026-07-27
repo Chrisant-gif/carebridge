@@ -1,67 +1,187 @@
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
+import {
+  Users,
+  HeartHandshake,
+  HandCoins,
+  Activity,
+} from "lucide-react";
+
+import WelcomeBanner from "../../components/dashboard/WelcomeBanner";
+import QuickActions from "../../components/dashboard/QuickActions";
+import DashboardCharts from "../../components/dashboard/DashboardCharts";
+import StatCard from "../../components/dashboard/StatCard";
 
 export default function DashboardPage() {
   return (
-    <DashboardLayout>
+    <div className="space-y-10">
+      {/* Welcome Banner */}
 
-      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+      <WelcomeBanner />
 
-        <Card
-          title="Families Supported"
-          value="148"
-        />
+      {/* Quick Actions */}
 
-        <Card
-          title="Volunteers"
-          value="75"
-        />
+      <QuickActions />
 
-        <Card
-          title="Hospital Visits"
-          value="320"
-        />
+      {/* Dashboard Statistics */}
 
-        <Card
-          title="Donations"
-          value="KES 1.2M"
-        />
-
-      </div>
-
-      <div className="mt-10 rounded-3xl bg-white p-8 shadow-sm">
-
-        <h2 className="text-2xl font-bold">
-          Recent Activity
+      <section>
+        <h2 className="mb-6 text-2xl font-bold text-gray-900">
+          Dashboard Overview
         </h2>
 
-        <p className="mt-3 text-gray-500">
-          Dashboard activity feed coming next...
-        </p>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            title="Families Supported"
+            value="148"
+            subtitle="Currently enrolled"
+            icon={<Users size={30} />}
+          />
 
+          <StatCard
+            title="Volunteers"
+            value="75"
+            subtitle="Active volunteers"
+            icon={<HeartHandshake size={30} />}
+          />
+
+          <StatCard
+            title="Hospital Visits"
+            value="320"
+            subtitle="Completed this year"
+            icon={<Activity size={30} />}
+          />
+
+          <StatCard
+            title="Donations"
+            value="KES 1.2M"
+            subtitle="Funds raised"
+            icon={<HandCoins size={30} />}
+          />
+        </div>
+      </section>
+
+      {/* Dashboard Charts */}
+
+      <DashboardCharts />
+
+      {/* Bottom Section */}
+
+      <div className="grid gap-8 xl:grid-cols-2">
+        {/* Recent Activity */}
+
+        <section className="rounded-3xl bg-white p-8 shadow-sm">
+          <h2 className="mb-6 text-2xl font-bold">
+            Recent Activity
+          </h2>
+
+          <div className="space-y-4">
+            <ActivityItem
+              title="Home Visit Completed"
+              description="Mary Wanjiku • Nairobi"
+              time="Today"
+            />
+
+            <ActivityItem
+              title="Donation Received"
+              description="KES 10,000 from John Kamau"
+              time="Yesterday"
+            />
+
+            <ActivityItem
+              title="Volunteer Registered"
+              description="Grace Njeri joined CareBridge"
+              time="2 days ago"
+            />
+
+            <ActivityItem
+              title="Therapy Session Completed"
+              description="Brian Otieno"
+              time="This week"
+            />
+          </div>
+        </section>
+
+        {/* Upcoming Visits */}
+
+        <section className="rounded-3xl bg-white p-8 shadow-sm">
+          <h2 className="mb-6 text-2xl font-bold">
+            Upcoming Visits
+          </h2>
+
+          <div className="space-y-4">
+            <VisitCard
+              child="Mary Wanjiku"
+              caregiver="Jane Wanjiku"
+              date="Tomorrow"
+            />
+
+            <VisitCard
+              child="Brian Otieno"
+              caregiver="Peter Otieno"
+              date="Friday"
+            />
+
+            <VisitCard
+              child="Faith Achieng"
+              caregiver="Lucy Achieng"
+              date="Monday"
+            />
+          </div>
+        </section>
       </div>
-
-    </DashboardLayout>
+    </div>
   );
 }
 
-function Card({
+function ActivityItem({
   title,
-  value,
+  description,
+  time,
 }: {
   title: string;
-  value: string;
+  description: string;
+  time: string;
 }) {
   return (
-    <div className="rounded-3xl bg-white p-8 shadow-sm">
+    <div className="flex items-center justify-between rounded-2xl border border-gray-100 p-5 transition hover:bg-gray-50">
+      <div>
+        <h3 className="font-semibold text-gray-900">
+          {title}
+        </h3>
 
-      <p className="text-gray-500">
-        {title}
-      </p>
+        <p className="text-sm text-gray-500">
+          {description}
+        </p>
+      </div>
 
-      <h3 className="mt-4 text-4xl font-bold text-emerald-600">
-        {value}
+      <span className="text-sm text-gray-400">
+        {time}
+      </span>
+    </div>
+  );
+}
+
+function VisitCard({
+  child,
+  caregiver,
+  date,
+}: {
+  child: string;
+  caregiver: string;
+  date: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
+      <h3 className="font-semibold text-gray-900">
+        {child}
       </h3>
 
+      <p className="mt-1 text-gray-600">
+        Caregiver: {caregiver}
+      </p>
+
+      <p className="mt-3 font-medium text-emerald-700">
+        📅 {date}
+      </p>
     </div>
   );
 }

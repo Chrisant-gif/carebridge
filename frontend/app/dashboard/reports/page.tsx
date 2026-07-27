@@ -1,39 +1,76 @@
-function Card({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-3xl bg-white p-8 shadow-sm">
-      <p className="text-gray-500">{title}</p>
+import {
+  Users,
+  HeartHandshake,
+  HandCoins,
+  Activity,
+  FileText,
+} from "lucide-react";
 
-      <h3 className="mt-4 text-4xl font-bold text-emerald-600">
-        {value}
-      </h3>
-    </div>
-  );
-}
+import PageHeader from "../../../components/dashboard/PageHeader";
+import ReportsSummary from "../../../components/dashboard/reports/ReportsSummary";
+import ReportsCharts from "../../../components/dashboard/reports/ReportsCharts";
+import ReportCard from "../../../components/dashboard/reports/ReportCard";
+import ExportButtons from "../../../components/dashboard/reports/ExportButtons";
+import RecentReports from "../../../components/dashboard/reports/RecentReports";
 
-export default function DashboardPage() {
+export default function ReportsPage() {
   return (
     <>
-      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
-        <Card title="Families Supported" value="148" />
-        <Card title="Volunteers" value="75" />
-        <Card title="Hospital Visits" value="320" />
-        <Card title="Donations" value="KES 1.2M" />
+      <PageHeader
+        title="Reports"
+        description="Generate, analyze and export reports for Kingdom Caregivers."
+      />
+
+      <ReportsSummary />
+
+      <div className="mt-10">
+        <ReportsCharts />
       </div>
 
-      <div className="mt-10 rounded-3xl bg-white p-8 shadow-sm">
-        <h2 className="text-2xl font-bold">
-          Recent Activity
-        </h2>
+      <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <ReportCard
+          title="Families Report"
+          description="Generate a complete report of all registered beneficiary families."
+          icon={<Users size={30} />}
+        />
 
-        <p className="mt-3 text-gray-500">
-          Dashboard activity feed coming next...
-        </p>
+        <ReportCard
+          title="Volunteers Report"
+          description="View volunteer registrations, participation and activity."
+          icon={<HeartHandshake size={30} />}
+        />
+
+        <ReportCard
+          title="Donations Report"
+          description="Track donations, donor history and financial summaries."
+          icon={<HandCoins size={30} />}
+        />
+
+        <ReportCard
+          title="Visits Report"
+          description="Review hospital visits, home visits and scheduled appointments."
+          icon={<Activity size={30} />}
+        />
+
+        <ReportCard
+          title="Community Impact"
+          description="Measure the overall impact of Kingdom Caregivers programmes."
+          icon={<FileText size={30} />}
+        />
+
+        <ReportCard
+          title="Annual Summary"
+          description="Generate a yearly summary suitable for stakeholders and donors."
+          icon={<FileText size={30} />}
+        />
+      </div>
+
+      <div className="mt-10">
+        <ExportButtons />
+      </div>
+
+      <div className="mt-10">
+        <RecentReports />
       </div>
     </>
   );
