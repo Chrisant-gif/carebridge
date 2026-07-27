@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Users,
   HeartHandshake,
@@ -9,7 +9,13 @@ import {
 } from "lucide-react";
 
 import { Family } from "../../../types/family";
-import { initialFamilies } from "../../../data/families";
+
+import {
+  getFamilies,
+  createFamily,
+  updateFamily,
+  deleteFamily,
+} from "../../../lib/api/families";
 
 import PageHeader from "../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../components/dashboard/PrimaryButton";
@@ -18,6 +24,7 @@ import StatCard from "../../../components/dashboard/StatCard";
 
 import FamilyModal from "../../../components/dashboard/families/FamilyModal";
 import FamiliesTable from "../../../components/dashboard/families/FamiliesTable";
+
 import {
   FamilyFormData,
 } from "../../../components/dashboard/families/FamilyForm";
@@ -25,6 +32,13 @@ import {
 import ConfirmDialog from "../../../components/dashboard/ConfirmDialog";
 
 export default function FamiliesPage() {
+  const [families, setFamilies] = useState<Family[]>([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [searchTerm, setSearchTerm] =
+    useState("");
+
   const [isFamilyModalOpen, setIsFamilyModalOpen] =
     useState(false);
 
@@ -34,14 +48,30 @@ export default function FamiliesPage() {
   const [deletingFamily, setDeletingFamily] =
     useState<Family | null>(null);
 
-  const [families, setFamilies] =
-    useState<Family[]>(initialFamilies);
+  useEffect(() => {
+    loadFamilies();
+  }, []);
 
-  const [searchTerm, setSearchTerm] =
-    useState("");
+  async function loadFamilies() {
+    try {
+      setLoading(true);
+
+      const data = await getFamilies();
+
+      setFamilies(data);
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to load families.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filteredFamilies = useMemo(() => {
-    const query = searchTerm.toLowerCase().trim();
+    const query = searchTerm
+      .toLowerCase()
+      .trim();
 
     if (!query) return families;
 
@@ -78,161 +108,130 @@ export default function FamiliesPage() {
     setIsFamilyModalOpen(false);
   };
 
-  const handleSaveFamily = (
-    data: FamilyFormData
-  ) => {
+  const handleSaveFamily = async (
+  data: FamilyFormData
+) => {
+  try {
     if (editingFamily) {
-      const updatedFamily: Family = {
-        ...editingFamily,
+      await updateFamily(editingFamily.id, {
         child: data.child,
         caregiver: data.caregiver,
         condition: data.condition,
         phone: data.phone,
         address: data.address,
-      };
-
-      setFamilies((prev) =>
-        prev.map((family) =>
-          family.id === updatedFamily.id
-            ? updatedFamily
-            : family
-        )
-      );
+      });
     } else {
-      const newFamily: Family = {
-        id: Date.now(),
+      await createFamily({
         child: data.child,
         caregiver: data.caregiver,
         condition: data.condition,
         phone: data.phone,
         address: data.address,
-        lastVisit: new Date().toLocaleDateString(
-          "en-GB",
-          {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          }
-        ),
-        status: "Active",
-      };
-
-      setFamilies((prev) => [
-        ...prev,
-        newFamily,
-      ]);
+      });
     }
 
+    await loadFamilies();
+
     handleCloseModal();
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save family.");
+  }
+};
 
-  const handleDeleteClick = (
-    family: Family
-  ) => {
-    setDeletingFamily(family);
-  };
+const handleDeleteClick = (
+  family: Family
+) => {
+  setDeletingFamily(family);
+};
 
-  const handleConfirmDelete = () => {
-    if (!deletingFamily) return;
-
-    setFamilies((prev) =>
-      prev.filter(
-        (family) =>
-          family.id !== deletingFamily.id
-      )
-    );
-
-    setDeletingFamily(null);
-  };
-
+const handleConfirmDelete = async () => {
+  if (loading) {
   return (
-    <>
-      <PageHeader
-        title="Families"
-        description="Manage all beneficiary families supported by Kingdom Caregivers."
-        action={
-          <PrimaryButton
-            onClick={handleOpenCreateModal}
-          >
-            + Add Family
-          </PrimaryButton>
-        }
-      />
-
-      <div className="mb-8">
-        <SearchBar
-          placeholder="Search families..."
-          value={searchTerm}
-          onChange={setSearchTerm}
-        />
+    <div className="flex h-[60vh] items-center justify-center">
+      <div className="text-lg font-semibold text-gray-500">
+        Loading families...
       </div>
-
-      <div className="mb-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          title="Total Families"
-          value={families.length.toString()}
-          subtitle="+12 this month"
-          icon={<Users size={30} />}
-        />
-
-        <StatCard
-          title="Active Cases"
-          value={families
-            .filter(
-              (family) =>
-                family.status === "Active"
-            )
-            .length.toString()}
-          subtitle="Currently active"
-          icon={
-            <HeartHandshake size={30} />
-          }
-        />
-
-        <StatCard
-          title="Hospital Visits"
-          value="320"
-          subtitle="This year"
-          icon={
-            <CalendarHeart size={30} />
-          }
-        />
-
-        <StatCard
-          title="Home Visits"
-          value="214"
-          subtitle="Completed"
-          icon={<Activity size={30} />}
-        />
-      </div>
-
-      <FamiliesTable
-        families={filteredFamilies}
-        onEdit={handleOpenEditModal}
-        onDelete={handleDeleteClick}
-      />
-
-      <FamilyModal
-        open={isFamilyModalOpen}
-        family={editingFamily}
-        onClose={handleCloseModal}
-        onSave={handleSaveFamily}
-      />
-
-      <ConfirmDialog
-        open={!!deletingFamily}
-        title="Delete Family"
-        message={`Are you sure you want to delete ${
-          deletingFamily?.child ??
-          "this family"
-        }? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        onConfirm={handleConfirmDelete}
-        onCancel={() =>
-          setDeletingFamily(null)
-        }
-      />
-    </>
+    </div>
   );
+}
+
+return (
+  <>
+    <PageHeader
+      title="Families"
+      description="Manage all beneficiary families supported by Kingdom Caregivers."
+      action={
+        <PrimaryButton onClick={handleOpenCreateModal}>
+          + Add Family
+        </PrimaryButton>
+      }
+    />
+
+    <div className="mb-8">
+      <SearchBar
+        placeholder="Search families..."
+        value={searchTerm}
+        onChange={setSearchTerm}
+      />
+    </div>
+
+    <div className="mb-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <StatCard
+        title="Total Families"
+        value={families.length.toString()}
+        subtitle="Registered families"
+        icon={<Users size={30} />}
+      />
+
+      <StatCard
+        title="Active Cases"
+        value={families
+          .filter((family) => family.status === "Active")
+          .length.toString()}
+        subtitle="Currently active"
+        icon={<HeartHandshake size={30} />}
+      />
+
+      <StatCard
+        title="Hospital Visits"
+        value="320"
+        subtitle="This year"
+        icon={<CalendarHeart size={30} />}
+      />
+
+      <StatCard
+        title="Home Visits"
+        value="214"
+        subtitle="Completed"
+        icon={<Activity size={30} />}
+      />
+    </div>
+
+    <FamiliesTable
+      families={filteredFamilies}
+      onEdit={handleOpenEditModal}
+      onDelete={handleDeleteClick}
+    />
+
+    <FamilyModal
+      open={isFamilyModalOpen}
+      family={editingFamily}
+      onClose={handleCloseModal}
+      onSave={handleSaveFamily}
+    />
+
+    <ConfirmDialog
+      open={!!deletingFamily}
+      title="Delete Family"
+      message={`Are you sure you want to delete ${
+        deletingFamily?.child ?? "this family"
+      }? This action cannot be undone.`}
+      confirmText="Delete"
+      cancelText="Cancel"
+      onConfirm={handleConfirmDelete}
+      onCancel={() => setDeletingFamily(null)}
+    />
+  </>
+);
 }
