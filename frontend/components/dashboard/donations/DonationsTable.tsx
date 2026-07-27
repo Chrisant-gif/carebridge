@@ -65,7 +65,7 @@ export default function DonationsTable({
               <td className="px-6 py-5">
                 <div>
                   <p className="font-semibold">
-                    {donation.donorName}
+                    {donation.donor_name}
                   </p>
 
                   <p className="text-sm text-gray-500">
@@ -76,20 +76,20 @@ export default function DonationsTable({
 
               <td className="px-6 py-5 font-semibold">
                 {donation.currency}{" "}
-                {donation.amount.toLocaleString()}
+                {Number(donation.amount).toLocaleString()}
               </td>
 
               <td className="px-6 py-5">
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    donation.paymentMethod === "M-PESA"
+                    donation.payment_method === "M-PESA"
                       ? "bg-emerald-100 text-emerald-700"
-                      : donation.paymentMethod === "Bank Transfer"
+                      : donation.payment_method === "Bank Transfer"
                       ? "bg-blue-100 text-blue-700"
                       : "bg-purple-100 text-purple-700"
                   }`}
                 >
-                  {donation.paymentMethod}
+                  {donation.payment_method}
                 </span>
               </td>
 
@@ -119,7 +119,7 @@ export default function DonationsTable({
               </td>
 
               <td className="px-6 py-5">
-                {donation.date}
+                {donation.donation_date}
               </td>
 
               <td className="px-6 py-5">

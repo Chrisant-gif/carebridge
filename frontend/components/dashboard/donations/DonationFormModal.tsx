@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+
 import { Donation } from "../../../types/donation";
 
 interface DonationFormModalProps {
@@ -11,47 +12,36 @@ interface DonationFormModalProps {
   donation?: Donation | null;
 }
 
+const createEmptyDonation = (): Donation => ({
+  id: 0,
+  donor_name: "",
+  amount: 0,
+  currency: "KES",
+  payment_method: "M-PESA",
+  purpose: "",
+  reference: "",
+  status: "Completed",
+  donation_date: new Date().toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }),
+});
+
 export default function DonationFormModal({
   isOpen,
   onClose,
   onSave,
   donation,
 }: DonationFormModalProps) {
-  const [formData, setFormData] = useState<Donation>({
-    id: Date.now(),
-    donorName: "",
-    amount: 0,
-    currency: "KES",
-    paymentMethod: "M-PESA",
-    purpose: "",
-    reference: "",
-    status: "Completed",
-    date: new Date().toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }),
-  });
+  const [formData, setFormData] =
+    useState<Donation>(createEmptyDonation());
 
   useEffect(() => {
     if (donation) {
       setFormData(donation);
     } else {
-      setFormData({
-        id: Date.now(),
-        donorName: "",
-        amount: 0,
-        currency: "KES",
-        paymentMethod: "M-PESA",
-        purpose: "",
-        reference: "",
-        status: "Completed",
-        date: new Date().toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }),
-      });
+      setFormData(createEmptyDonation());
     }
   }, [donation, isOpen]);
 
@@ -59,9 +49,7 @@ export default function DonationFormModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     onSave(formData);
-
     onClose();
   };
 
@@ -86,6 +74,7 @@ export default function DonationFormModal({
           className="space-y-6 p-8"
         >
           <div className="grid gap-5 md:grid-cols-2">
+
             <div>
               <label className="mb-2 block text-sm font-medium">
                 Donor Name
@@ -93,11 +82,11 @@ export default function DonationFormModal({
 
               <input
                 required
-                value={formData.donorName}
+                value={formData.donor_name}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    donorName: e.target.value,
+                    donor_name: e.target.value,
                   })
                 }
                 className="w-full rounded-xl border p-3 focus:border-emerald-500 focus:outline-none"
@@ -150,12 +139,12 @@ export default function DonationFormModal({
               </label>
 
               <select
-                value={formData.paymentMethod}
+                value={formData.payment_method}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    paymentMethod: e.target
-                      .value as Donation["paymentMethod"],
+                    payment_method:
+                      e.target.value as Donation["payment_method"],
                   })
                 }
                 className="w-full rounded-xl border p-3"
@@ -212,8 +201,8 @@ export default function DonationFormModal({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    status: e.target
-                      .value as Donation["status"],
+                    status:
+                      e.target.value as Donation["status"],
                   })
                 }
                 className="w-full rounded-xl border p-3"
@@ -223,6 +212,7 @@ export default function DonationFormModal({
                 <option>Failed</option>
               </select>
             </div>
+
           </div>
 
           <div className="flex justify-end gap-4 pt-4">

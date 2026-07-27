@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   HandHeart,
   DollarSign,
@@ -9,7 +9,13 @@ import {
 } from "lucide-react";
 
 import { Donation } from "../../../types/donation";
-import { initialDonations } from "../../../data/donations";
+
+import {
+  getDonations,
+  createDonation,
+  updateDonation,
+  deleteDonation,
+} from "../../../lib/api/donations";
 
 import PageHeader from "../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../components/dashboard/PrimaryButton";
@@ -25,8 +31,8 @@ import DonationFormModal from "../../../components/dashboard/donations/DonationF
 import DeleteDonationModal from "../../../components/dashboard/donations/DeleteDonationModal";
 
 export default function DonationsPage() {
-  const [donations, setDonations] =
-    useState<Donation[]>(initialDonations);
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] =
     useState("");
@@ -43,20 +49,41 @@ export default function DonationsPage() {
   const [donationToDelete, setDonationToDelete] =
     useState<Donation | null>(null);
 
+  useEffect(() => {
+    loadDonations();
+  }, []);
+
+  async function loadDonations() {
+    try {
+      setLoading(true);
+
+      const data = await getDonations();
+
+      setDonations(data);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to load donations.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const filteredDonations = useMemo(() => {
-    const query = searchTerm.toLowerCase().trim();
+    const query = searchTerm
+      .toLowerCase()
+      .trim();
 
     if (!query) return donations;
 
     return donations.filter((donation) =>
       [
-        donation.donorName,
-        donation.paymentMethod,
+        donation.donor_name,
+        donation.payment_method,
         donation.purpose,
         donation.reference,
         donation.status,
         donation.currency,
-        donation.date,
+        donation.donation_date,
       ]
         .join(" ")
         .toLowerCase()
@@ -65,16 +92,18 @@ export default function DonationsPage() {
   }, [donations, searchTerm]);
 
   const totalAmount = donations.reduce(
-    (sum, donation) => sum + donation.amount,
+    (sum, donation) => sum + Number(donation.amount),
     0
   );
 
   const completed = donations.filter(
-    (donation) => donation.status === "Completed"
+    (donation) =>
+      donation.status === "Completed"
   ).length;
 
   const international = donations.filter(
-    (donation) => donation.currency !== "KES"
+    (donation) =>
+      donation.currency !== "KES"
   ).length;
 
   const handleAddDonation = () => {
@@ -89,24 +118,42 @@ export default function DonationsPage() {
     setIsModalOpen(true);
   };
 
-  const handleSaveDonation = (
+  const handleSaveDonation = async (
     donation: Donation
   ) => {
-    if (selectedDonation) {
-      setDonations((prev) =>
-        prev.map((d) =>
-          d.id === donation.id ? donation : d
-        )
-      );
-    } else {
-      setDonations((prev) => [
-        donation,
-        ...prev,
-      ]);
-    }
+    try {
+      if (selectedDonation) {
+        await updateDonation(donation.id, {
+          donor_name: donation.donor_name,
+          amount: donation.amount,
+          currency: donation.currency,
+          payment_method: donation.payment_method,
+          purpose: donation.purpose,
+          reference: donation.reference,
+          status: donation.status,
+          donation_date: donation.donation_date,
+        });
+      } else {
+        await createDonation({
+          donor_name: donation.donor_name,
+          amount: donation.amount,
+          currency: donation.currency,
+          payment_method: donation.payment_method,
+          purpose: donation.purpose,
+          reference: donation.reference,
+          status: donation.status,
+          donation_date: donation.donation_date,
+        });
+      }
 
-    setSelectedDonation(null);
-    setIsModalOpen(false);
+      await loadDonations();
+
+      setSelectedDonation(null);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save donation.");
+    }
   };
 
   const handleDeleteDonation = (
@@ -116,18 +163,34 @@ export default function DonationsPage() {
     setIsDeleteOpen(true);
   };
 
-  const confirmDeleteDonation = () => {
-    if (!donationToDelete) return;
+  const confirmDeleteDonation =
+    async () => {
+      if (!donationToDelete) return;
 
-    setDonations((prev) =>
-      prev.filter(
-        (d) => d.id !== donationToDelete.id
-      )
+      try {
+        await deleteDonation(
+          donationToDelete.id
+        );
+
+        await loadDonations();
+
+        setDonationToDelete(null);
+        setIsDeleteOpen(false);
+      } catch (error) {
+        console.error(error);
+        alert("Failed to delete donation.");
+      }
+    };
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="text-lg font-semibold text-gray-500">
+          Loading donations...
+        </div>
+      </div>
     );
-
-    setDonationToDelete(null);
-    setIsDeleteOpen(false);
-  };
+  }
 
   return (
     <>
@@ -174,7 +237,7 @@ export default function DonationsPage() {
           icon={<DollarSign size={30} />}
         />
 
-        <StatCard
+                <StatCard
           title="Completed"
           value={completed.toString()}
           subtitle="Successfully received"
@@ -197,18 +260,18 @@ export default function DonationsPage() {
 
       <DonationFormModal
         isOpen={isModalOpen}
+        donation={selectedDonation}
         onClose={() => {
           setSelectedDonation(null);
           setIsModalOpen(false);
         }}
-        donation={selectedDonation}
         onSave={handleSaveDonation}
       />
 
       <DeleteDonationModal
         isOpen={isDeleteOpen}
         donorName={
-          donationToDelete?.donorName ?? ""
+          donationToDelete?.donor_name ?? ""
         }
         onClose={() => {
           setDonationToDelete(null);
