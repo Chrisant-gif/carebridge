@@ -146,7 +146,21 @@ const handleDeleteClick = (
 };
 
 const handleConfirmDelete = async () => {
-  if (loading) {
+  if (!deletingFamily) return;
+
+  try {
+    await deleteFamily(deletingFamily.id);
+
+    await loadFamilies();
+
+    setDeletingFamily(null);
+  } catch (error) {
+    console.error(error);
+    alert("Failed to delete family.");
+  }
+};
+
+if (loading) {
   return (
     <div className="flex h-[60vh] items-center justify-center">
       <div className="text-lg font-semibold text-gray-500">
@@ -186,9 +200,11 @@ return (
 
       <StatCard
         title="Active Cases"
-        value={families
-          .filter((family) => family.status === "Active")
-          .length.toString()}
+        value={
+          families.filter(
+            (family) => family.status === "Active"
+          ).length.toString()
+        }
         subtitle="Currently active"
         icon={<HeartHandshake size={30} />}
       />
