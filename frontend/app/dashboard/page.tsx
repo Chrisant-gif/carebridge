@@ -1,16 +1,63 @@
+"use client";
+
 import {
   Users,
   HeartHandshake,
   HandCoins,
   Activity,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { getFamilies } from "../../lib/api/families";
+import { getVisits } from "../../lib/api/visits";
+import { getDonations } from "../../lib/api/donations";
 
 import WelcomeBanner from "../../components/dashboard/WelcomeBanner";
 import QuickActions from "../../components/dashboard/QuickActions";
 import DashboardCharts from "../../components/dashboard/DashboardCharts";
 import StatCard from "../../components/dashboard/StatCard";
 
-export default function DashboardPage() {
+ export default function DashboardPage() {
+  const [familyCount, setFamilyCount] =
+    useState(0);
+
+  const [visitCount, setVisitCount] =
+    useState(0);
+
+  const [donationTotal, setDonationTotal] =
+    useState(0);
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  async function loadDashboard() {
+    try {
+      const [
+        families,
+        visits,
+        donations,
+      ] = await Promise.all([
+        getFamilies(),
+        getVisits(),
+        getDonations(),
+      ]);
+
+      setFamilyCount(families.length);
+
+      setVisitCount(visits.length);
+
+      setDonationTotal(
+        donations.reduce(
+  (total, donation) =>
+    total + Number(donation.amount),
+  0
+)
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }   
   return (
     <div className="space-y-10">
       {/* Welcome Banner */}
@@ -31,7 +78,7 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           <StatCard
             title="Families Supported"
-            value="148"
+            value={familyCount.toString()}
             subtitle="Currently enrolled"
             icon={<Users size={30} />}
           />
@@ -45,14 +92,14 @@ export default function DashboardPage() {
 
           <StatCard
             title="Hospital Visits"
-            value="320"
+            value={visitCount.toString()}
             subtitle="Completed this year"
             icon={<Activity size={30} />}
           />
 
           <StatCard
             title="Donations"
-            value="KES 1.2M"
+            value={`KES ${donationTotal.toLocaleString()}`}
             subtitle="Funds raised"
             icon={<HandCoins size={30} />}
           />
