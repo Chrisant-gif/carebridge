@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CalendarHeart,
   Home,
@@ -9,8 +9,19 @@ import {
 } from "lucide-react";
 
 import { Visit } from "../../../types/visit";
-import { initialVisits } from "../../../data/visits";
-import { initialFamilies } from "../../../data/families";
+
+import {
+  getVisits,
+  createVisit,
+  updateVisit,
+  deleteVisit,
+} from "../../../lib/api/visits";
+
+import {
+  getFamilies,
+} from "../../../lib/api/families";
+
+import { Family } from "../../../types/family";
 
 import PageHeader from "../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../components/dashboard/PrimaryButton";
@@ -27,7 +38,13 @@ import ConfirmDialog from "../../../components/dashboard/ConfirmDialog";
 
 export default function VisitsPage() {
   const [visits, setVisits] =
-    useState<Visit[]>(initialVisits);
+  useState<Visit[]>([]);
+
+const [families, setFamilies] =
+  useState<Family[]>([]);
+
+const [loading, setLoading] =
+  useState(true);
 
   const [searchTerm, setSearchTerm] =
     useState("");
@@ -41,6 +58,30 @@ export default function VisitsPage() {
   const [deletingVisit, setDeletingVisit] =
     useState<Visit | null>(null);
 
+    useEffect(() => {
+  loadData();
+}, []);
+
+async function loadData() {
+  try {
+    setLoading(true);
+
+    const [visitData, familyData] =
+      await Promise.all([
+        getVisits(),
+        getFamilies(),
+      ]);
+
+    setVisits(visitData);
+    setFamilies(familyData);
+  } catch (error) {
+    console.error(error);
+    alert("Failed to load visits.");
+  } finally {
+    setLoading(false);
+  }
+}
+
   const filteredVisits = useMemo(() => {
     const query = searchTerm
       .toLowerCase()
@@ -49,10 +90,17 @@ export default function VisitsPage() {
     if (!query) return visits;
 
     return visits.filter((visit) => {
-      const family = initialFamilies.find(
+      const family = families.find(
         (f) => f.id === visit.familyId
       );
 
+      if (loading) {
+  return (
+    <div className="p-8 text-gray-500">
+      Loading visits...
+    </div>
+  );
+}
       return (
         family?.child
           .toLowerCase()
@@ -105,48 +153,24 @@ export default function VisitsPage() {
     setIsVisitModalOpen(false);
   };
 
-  const handleSaveVisit = (
-    data: VisitFormData
-  ) => {
+const handleSaveVisit = async (
+  data: VisitFormData
+) => {
+  try {
     if (editingVisit) {
-      const updatedVisit: Visit = {
-        ...editingVisit,
-        familyId: data.familyId,
-        caregiver: data.caregiver,
-        visitType: data.visitType,
-        date: data.date,
-        location: data.location,
-        status: data.status,
-        notes: data.notes,
-      };
-
-      setVisits((prev) =>
-        prev.map((visit) =>
-          visit.id === updatedVisit.id
-            ? updatedVisit
-            : visit
-        )
-      );
+      await updateVisit(editingVisit.id, data);
     } else {
-      const newVisit: Visit = {
-        id: Date.now(),
-        familyId: data.familyId,
-        caregiver: data.caregiver,
-        visitType: data.visitType,
-        date: data.date,
-        location: data.location,
-        status: data.status,
-        notes: data.notes,
-      };
-
-      setVisits((prev) => [
-        ...prev,
-        newVisit,
-      ]);
+      await createVisit(data);
     }
 
+    await loadData();
+
     handleCloseModal();
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save visit.");
+  }
+};
 
   const handleDeleteClick = (
     visit: Visit
@@ -239,7 +263,7 @@ return (
               }
             : undefined
         }
-        families={initialFamilies}
+        families={families}
         onClose={handleCloseModal}
         onSave={handleSaveVisit}
       />
