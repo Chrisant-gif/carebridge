@@ -105,3 +105,29 @@ export async function deleteFamily(id: number) {
 
   if (error) throw error;
 }
+
+export async function getFamily(
+  id: number
+): Promise<Family | null> {
+  const { data, error } = await supabase
+    .from("families")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) return null;
+
+  return {
+    id: data.id,
+    child: data.child,
+    caregiver: data.caregiver,
+    condition: data.condition,
+    phone: data.phone ?? "",
+    address: data.address ?? "",
+    lastVisit: data.last_visit ?? "",
+    status:
+      data.status === "Follow-up"
+        ? "Follow-up"
+        : "Active",
+  };
+}

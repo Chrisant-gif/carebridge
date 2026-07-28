@@ -8,7 +8,7 @@ import {
   Activity,
 } from "lucide-react";
 
-import { initialFamilies } from "../../../../data/families";
+import { getFamily } from "../../../../lib/api/families";
 import StatCard from "../../../../components/dashboard/StatCard";
 
 interface FamilyDetailsPageProps {
@@ -22,13 +22,11 @@ export default async function FamilyDetailsPage({
 }: FamilyDetailsPageProps) {
   const { id } = await params;
 
-  const family = initialFamilies.find(
-    (family) => family.id === Number(id)
-  );
+  const family = await getFamily(Number(id));
 
-  if (!family) {
-    notFound();
-  }
+if (!family) {
+  notFound();
+}
 
   return (
     <div className="space-y-8">
