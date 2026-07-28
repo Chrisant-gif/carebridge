@@ -1,13 +1,13 @@
 export interface Donation {
   id: number;
 
-  donor_name: string;
+  donorName: string;
 
   amount: number;
 
   currency: string;
 
-  payment_method: "M-PESA" | "Bank Transfer" | "Wise";
+  paymentMethod: "M-PESA" | "Bank Transfer" | "Wise";
 
   purpose: string;
 
@@ -15,7 +15,5 @@ export interface Donation {
 
   status: "Completed" | "Pending" | "Failed";
 
-  donation_date: string;
-
-  created_at?: string;
+  date: string;
 }

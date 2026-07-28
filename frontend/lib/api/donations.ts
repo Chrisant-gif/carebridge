@@ -1,4 +1,5 @@
 import { supabase } from "../supabase/client";
+import { Donation } from "../../types/donation";
 
 export async function getDonations() {
   const { data, error } = await supabase
@@ -66,4 +67,28 @@ export async function deleteDonation(id: number) {
   if (error) {
     throw error;
   }
+}
+
+export async function getDonation(
+  id: number
+): Promise<Donation | null> {
+  const { data, error } = await supabase
+    .from("donations")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) return null;
+
+  return {
+    id: data.id,
+    donorName: data.donor_name,
+    amount: data.amount,
+    currency: data.currency,
+    paymentMethod: data.payment_method,
+    purpose: data.purpose,
+    reference: data.reference,
+    date: data.donation_date,
+    status: data.status,
+  };
 }

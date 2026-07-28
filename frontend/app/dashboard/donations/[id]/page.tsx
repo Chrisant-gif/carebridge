@@ -12,7 +12,7 @@ import {
   FileText,
 } from "lucide-react";
 
-import { initialDonations } from "../../../../data/donations";
+import { getDonation } from "../../../../lib/api/donations";
 import StatCard from "../../../../components/dashboard/StatCard";
 
 interface DonationDetailsPageProps {
@@ -26,13 +26,11 @@ export default async function DonationDetailsPage({
 }: DonationDetailsPageProps) {
   const { id } = await params;
 
-  const donation = initialDonations.find(
-    (d) => d.id === Number(id)
-  );
+  const donation = await getDonation(Number(id));
 
-  if (!donation) {
-    notFound();
-  }
+if (!donation) {
+  notFound();
+}
 
   return (
     <div className="space-y-8">

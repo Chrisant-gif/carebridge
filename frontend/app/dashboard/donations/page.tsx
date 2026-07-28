@@ -77,13 +77,13 @@ export default function DonationsPage() {
 
     return donations.filter((donation) =>
       [
-        donation.donor_name,
-        donation.payment_method,
+        donation.donorName,
+        donation.paymentMethod,
         donation.purpose,
         donation.reference,
         donation.status,
         donation.currency,
-        donation.donation_date,
+        donation.date,
       ]
         .join(" ")
         .toLowerCase()
@@ -124,26 +124,26 @@ export default function DonationsPage() {
     try {
       if (selectedDonation) {
         await updateDonation(donation.id, {
-          donor_name: donation.donor_name,
-          amount: donation.amount,
-          currency: donation.currency,
-          payment_method: donation.payment_method,
-          purpose: donation.purpose,
-          reference: donation.reference,
-          status: donation.status,
-          donation_date: donation.donation_date,
-        });
+  donor_name: donation.donorName,
+  amount: donation.amount,
+  currency: donation.currency,
+  payment_method: donation.paymentMethod,
+  purpose: donation.purpose,
+  reference: donation.reference,
+  status: donation.status,
+  donation_date: donation.date,
+});
       } else {
         await createDonation({
-          donor_name: donation.donor_name,
-          amount: donation.amount,
-          currency: donation.currency,
-          payment_method: donation.payment_method,
-          purpose: donation.purpose,
-          reference: donation.reference,
-          status: donation.status,
-          donation_date: donation.donation_date,
-        });
+  donor_name: donation.donorName,
+  amount: donation.amount,
+  currency: donation.currency,
+  payment_method: donation.paymentMethod,
+  purpose: donation.purpose,
+  reference: donation.reference,
+  status: donation.status,
+  donation_date: donation.date,
+});
       }
 
       await loadDonations();
@@ -271,7 +271,7 @@ export default function DonationsPage() {
       <DeleteDonationModal
         isOpen={isDeleteOpen}
         donorName={
-          donationToDelete?.donor_name ?? ""
+          donationToDelete?.donorName ?? ""
         }
         onClose={() => {
           setDonationToDelete(null);
