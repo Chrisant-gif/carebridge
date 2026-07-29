@@ -1,6 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import {
   HeartHandshake,
   UserCheck,
@@ -9,7 +14,13 @@ import {
 } from "lucide-react";
 
 import { Volunteer } from "../../../types/volunteer";
-import { initialVolunteers } from "../../../data/volunteers";
+
+import {
+  getVolunteers,
+  createVolunteer,
+  updateVolunteer,
+  deleteVolunteer,
+} from "../../../lib/api/volunteers";
 
 import PageHeader from "../../../components/dashboard/PageHeader";
 import PrimaryButton from "../../../components/dashboard/PrimaryButton";
@@ -26,7 +37,10 @@ import ConfirmDialog from "../../../components/dashboard/ConfirmDialog";
 
 export default function VolunteersPage() {
   const [volunteers, setVolunteers] =
-    useState<Volunteer[]>(initialVolunteers);
+    useState<Volunteer[]>([]);
+
+const [loading, setLoading] =
+  useState(true);
 
   const [searchTerm, setSearchTerm] =
     useState("");
@@ -39,7 +53,24 @@ export default function VolunteersPage() {
 
   const [deletingVolunteer, setDeletingVolunteer] =
     useState<Volunteer | null>(null);
+useEffect(() => {
+  loadVolunteers();
+}, []);
 
+async function loadVolunteers() {
+  try {
+    setLoading(true);
+
+    const data = await getVolunteers();
+
+    setVolunteers(data);
+  } catch (error) {
+    console.error(error);
+    alert("Failed to load volunteers.");
+  } finally {
+    setLoading(false);
+  }
+}
   const filteredVolunteers = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
 
@@ -79,64 +110,60 @@ export default function VolunteersPage() {
     setIsVolunteerModalOpen(false);
   };
 
-  const handleSaveVolunteer = (
-    data: VolunteerFormData
-  ) => {
+  const handleSaveVolunteer = async (
+  data: VolunteerFormData
+) => {
+  try {
     if (editingVolunteer) {
-      const updatedVolunteer: Volunteer = {
-        ...editingVolunteer,
-        ...data,
-      };
-
-      setVolunteers((prev) =>
-        prev.map((volunteer) =>
-          volunteer.id === updatedVolunteer.id
-            ? updatedVolunteer
-            : volunteer
-        )
+      await updateVolunteer(
+        editingVolunteer.id,
+        data
       );
     } else {
-      const newVolunteer: Volunteer = {
-        id: Date.now(),
-        joinedDate: new Date().toLocaleDateString(
-          "en-GB",
-          {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          }
-        ),
-        ...data,
-      };
-
-      setVolunteers((prev) => [
-        ...prev,
-        newVolunteer,
-      ]);
+      await createVolunteer(data);
     }
 
+    await loadVolunteers();
+
     handleCloseModal();
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save volunteer.");
+  }
+};
 
-  const handleDeleteClick = (
-    volunteer: Volunteer
-  ) => {
-    setDeletingVolunteer(volunteer);
-  };
+const handleDeleteClick = (
+  volunteer: Volunteer
+) => {
+  setDeletingVolunteer(volunteer);
+};
 
-  const handleConfirmDelete = () => {
-    if (!deletingVolunteer) return;
+const handleConfirmDelete = async () => {
+  if (!deletingVolunteer) return;
 
-    setVolunteers((prev) =>
-      prev.filter(
-        (volunteer) =>
-          volunteer.id !== deletingVolunteer.id
-      )
+  try {
+    await deleteVolunteer(
+      deletingVolunteer.id
     );
 
-    setDeletingVolunteer(null);
-  };
+    await loadVolunteers();
 
+    setDeletingVolunteer(null);
+  } catch (error) {
+    console.error(error);
+    alert("Failed to delete volunteer.");
+  }
+};
+
+  if (loading) {
+  return (
+    <div className="flex h-[60vh] items-center justify-center">
+      <div className="text-lg font-semibold text-gray-500">
+        Loading volunteers...
+      </div>
+    </div>
+  );
+}
   return (
     <>
       <PageHeader

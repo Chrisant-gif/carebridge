@@ -8,8 +8,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-import { initialVolunteers } from "../../../../data/volunteers";
 import StatCard from "../../../../components/dashboard/StatCard";
+import { getVolunteer } from "../../../../lib/api/volunteers";
 
 interface VolunteerDetailsPageProps {
   params: Promise<{
@@ -22,13 +22,13 @@ export default async function VolunteerDetailsPage({
 }: VolunteerDetailsPageProps) {
   const { id } = await params;
 
-  const volunteer = initialVolunteers.find(
-    (v) => v.id === Number(id)
-  );
+  const volunteer = await getVolunteer(
+  Number(id)
+);
 
-  if (!volunteer) {
-    notFound();
-  }
+if (!volunteer) {
+  notFound();
+}
 
   return (
     <div className="space-y-8">
