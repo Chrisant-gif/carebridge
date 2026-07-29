@@ -1,5 +1,9 @@
 "use client";
 
+import { Family } from "../../types/family";
+
+import { Visit } from "../../types/visit";
+
 import {
   Users,
   HeartHandshake,
@@ -11,6 +15,7 @@ import { useEffect, useState } from "react";
 import { getFamilies } from "../../lib/api/families";
 import { getVisits } from "../../lib/api/visits";
 import { getDonations } from "../../lib/api/donations";
+import { getVolunteers } from "../../lib/api/volunteers";
 
 import WelcomeBanner from "../../components/dashboard/WelcomeBanner";
 import QuickActions from "../../components/dashboard/QuickActions";
@@ -21,11 +26,30 @@ import StatCard from "../../components/dashboard/StatCard";
   const [familyCount, setFamilyCount] =
     useState(0);
 
+    const [families, setFamilies] =
+  useState<Family[]>([]);
+
   const [visitCount, setVisitCount] =
     useState(0);
 
   const [donationTotal, setDonationTotal] =
     useState(0);
+
+    const [volunteerCount, setVolunteerCount] =
+  useState(0);
+
+  const [recentActivity, setRecentActivity] =
+  useState<
+    {
+      title: string;
+      description: string;
+      time: string;
+    }[]
+  >([]);
+
+const [upcomingVisits, setUpcomingVisits] =
+  useState<Visit[]>([]);
+
 
   useEffect(() => {
     loadDashboard();
@@ -34,18 +58,38 @@ import StatCard from "../../components/dashboard/StatCard";
   async function loadDashboard() {
     try {
       const [
-        families,
-        visits,
-        donations,
-      ] = await Promise.all([
-        getFamilies(),
-        getVisits(),
-        getDonations(),
-      ]);
+  families,
+  visits,
+  donations,
+  volunteers,
+] = await Promise.all([
+  getFamilies(),
+  getVisits(),
+  getDonations(),
+  getVolunteers(),
+]);
 
       setFamilyCount(families.length);
 
+      setFamilies(families);
+
       setVisitCount(visits.length);
+
+      const scheduledVisits = visits
+  .filter(
+    (visit) => visit.status === "Scheduled"
+  )
+  .sort(
+    (a, b) =>
+      new Date(a.date).getTime() -
+      new Date(b.date).getTime()
+  );
+
+setUpcomingVisits(
+  scheduledVisits.slice(0, 3)
+);
+
+      setVolunteerCount(volunteers.length);
 
       setDonationTotal(
         donations.reduce(
@@ -54,6 +98,51 @@ import StatCard from "../../components/dashboard/StatCard";
   0
 )
       );
+
+setRecentActivity([
+  ...(families.length
+    ? [
+        {
+          title: "New Family Added",
+          description: `${families[0].child} registered`,
+          time: families[0].lastVisit ?? "Recently",
+        },
+      ]
+    : []),
+
+  ...(volunteers.length
+    ? [
+        {
+          title: "Volunteer Registered",
+          description: `${volunteers[0].name} joined`,
+          time: volunteers[0].joinedDate,
+        },
+      ]
+    : []),
+
+  ...(visits.length
+    ? [
+        {
+          title: `${visits[0].visitType} Visit`,
+          description: `${visits[0].caregiver} • ${visits[0].location}`,
+          time: visits[0].date,
+        },
+      ]
+    : []),
+
+  ...(donations.length
+    ? [
+        {
+          title: "Donation Received",
+          description: `${donations[0].currency} ${Number(
+            donations[0].amount
+          ).toLocaleString()} from ${donations[0].donor_name}`,
+          time: donations[0].donation_date,
+        },
+      ]
+    : []),
+]);
+
     } catch (error) {
       console.error(error);
     }
@@ -85,7 +174,7 @@ import StatCard from "../../components/dashboard/StatCard";
 
           <StatCard
             title="Volunteers"
-            value="75"
+            value={volunteerCount.toString()}
             subtitle="Active volunteers"
             icon={<HeartHandshake size={30} />}
           />
@@ -121,30 +210,21 @@ import StatCard from "../../components/dashboard/StatCard";
           </h2>
 
           <div className="space-y-4">
-            <ActivityItem
-              title="Home Visit Completed"
-              description="Mary Wanjiku • Nairobi"
-              time="Today"
-            />
-
-            <ActivityItem
-              title="Donation Received"
-              description="KES 10,000 from John Kamau"
-              time="Yesterday"
-            />
-
-            <ActivityItem
-              title="Volunteer Registered"
-              description="Grace Njeri joined CareBridge"
-              time="2 days ago"
-            />
-
-            <ActivityItem
-              title="Therapy Session Completed"
-              description="Brian Otieno"
-              time="This week"
-            />
-          </div>
+  {recentActivity.length === 0 ? (
+    <p className="text-gray-500">
+      No recent activity.
+    </p>
+  ) : (
+    recentActivity.map((activity, index) => (
+      <ActivityItem
+        key={index}
+        title={activity.title}
+        description={activity.description}
+        time={activity.time}
+      />
+    ))
+  )}
+</div>
         </section>
 
         {/* Upcoming Visits */}
@@ -154,25 +234,31 @@ import StatCard from "../../components/dashboard/StatCard";
             Upcoming Visits
           </h2>
 
-          <div className="space-y-4">
-            <VisitCard
-              child="Mary Wanjiku"
-              caregiver="Jane Wanjiku"
-              date="Tomorrow"
-            />
+         <div className="space-y-4">
+  {upcomingVisits.length === 0 ? (
+    <p className="text-gray-500">
+      No upcoming visits scheduled.
+    </p>
+  ) : (
+    upcomingVisits.map((visit) => {
+  const family = families.find(
+    (family) => family.id === visit.familyId
+  );
 
-            <VisitCard
-              child="Brian Otieno"
-              caregiver="Peter Otieno"
-              date="Friday"
-            />
-
-            <VisitCard
-              child="Faith Achieng"
-              caregiver="Lucy Achieng"
-              date="Monday"
-            />
-          </div>
+  return (
+    <VisitCard
+      key={visit.id}
+      child={
+        family?.child ??
+        `Family #${visit.familyId}`
+      }
+      caregiver={visit.caregiver}
+      date={visit.date}
+    />
+  );
+})
+  )}
+</div>
         </section>
       </div>
     </div>
